@@ -50,6 +50,10 @@ function App() {
         getAudioFeatures(trackId)
         getAudioAnalysis(trackId)
       }
+
+      // test track id
+      // getAudioFeatures("11dFghVXANMlKmJXsNCbNl")
+      // getAudioAnalysis("11dFghVXANMlKmJXsNCbNl")
     }
     catch(error) {
       console.error("Error retreiving user tracks; ", error);
@@ -60,8 +64,8 @@ function App() {
   // audio features function
   async function getAudioFeatures (trackID) {
     try {
-      const {data} = await axios.get("https://api.spotify.com/v1/audio-features/", {
-          params: { id: trackID.toString()},
+      const {data} = await axios.get(`https://api.spotify.com/v1/audio-features/`+trackID, {
+          // params: { id: trackID.toString()},
           headers: {
             Authorization: `Bearer ${token}`,
             Accept: "application/json",
@@ -78,8 +82,8 @@ function App() {
   // audio analysis function
   async function getAudioAnalysis (trackID) {
     try {
-      const {data} = await axios.get("https://api.spotify.com/v1/audio-analysis/", {
-          params: { id: trackID.toString()},
+      const {data} = await axios.get(`https://api.spotify.com/v1/audio-analysis/`+trackID, {
+          // params: { id: trackID.toString()},
           headers: {
             Authorization: `Bearer ${token}`,
             Accept: "application/json",
