@@ -8,48 +8,92 @@ function App() {
   const AUTH_ENDPOINT = 'https://accounts.spotify.com/authorize';
   const RESPONSE_TYPE = "token";
   const scopes = "user-library-read";
+  const NUMSONGSLIMIT = 2;
 
   const [token, setToken] = useState("");
   useEffect(() => {
     // the hash is the url that contains the access_token and other info
     const hash = window.location.hash
-    let token = window.localStorage.getItem("token")
-
-    if (!token && hash) {
-        // get the token from the hash by spliting the hash
-        token = hash.substring(1).split("&").find(elem => elem.startsWith("access_token")).split("=")[1]
-        // console.log(token)
-        window.location.hash = ""
-        window.localStorage.setItem("token", token)
-    }
+    let token = hash.substring(1).split("&").find(elem => elem.startsWith("access_token"))
+    // if the token exists then split the token
+    if (token) {
+      token = token.split("=")[1];
+    } 
     setToken(token)
   }, [])
 
 
   const logout = () => {
     setToken("")
-    window.localStorage.removeItem("token")
   } 
 
+  // returns a list of the users saved tracks
   const getTracks = async(e) => {
     e.preventDefault();
     try {
       const {data} = await axios.get("https://api.spotify.com/v1/me/tracks", {
-      params: { limit: 10, offset: 0 },
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      }
-    })
-    console.log(data)
+        params: { limit: NUMSONGSLIMIT, offset: 0 },
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        }
+      })
 
+      console.log(data)
+      // get the id for a track
+      // console.log(data.items[0].track.id)
+
+      for (let i = 0; i < NUMSONGSLIMIT; i++) {
+        let trackId = data.items[i].track.id
+        console.log(trackId)
+        getAudioFeatures(trackId)
+        getAudioAnalysis(trackId)
+      }
     }
     catch(error) {
       console.error("Error retreiving user tracks; ", error);
     }
   }
   
+  
+  // audio features function
+  async function getAudioFeatures (trackID) {
+    try {
+      const {data} = await axios.get("https://api.spotify.com/v1/audio-features/", {
+          params: { id: trackID.toString()},
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          }
+      })
+      console.log(data)
+    }
+    catch(error) {
+      console.error("Error retreiving audio features; ", error);
+    }
+  }
+
+  // audio analysis function
+  async function getAudioAnalysis (trackID) {
+    try {
+      const {data} = await axios.get("https://api.spotify.com/v1/audio-analysis/", {
+          params: { id: trackID.toString()},
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          }
+      })
+      console.log(data)
+    }
+    catch(error) {
+      console.error("Error retreiving audio analysis; ", error);
+    }
+  }
+
+
   return (
   
     <div className="App">
@@ -59,9 +103,9 @@ function App() {
             to Spotify</a>
         : <button onClick={logout}>Logout</button>}
 
-    {token ? 
-    <button onClick={getTracks}>Get Tracks</button>
-      : <h2> Please login</h2>}
+      {token ? 
+      <button onClick={getTracks}>Get Tracks</button>
+        : <h2> Please login</h2>}
       </header>      
 
 
